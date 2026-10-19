@@ -158,9 +158,15 @@
     <string name="grace_hours">ያለ ቅጣት የሚፈቀድ ጊዜ (ሰዓት)</string>
     <string name="warn_hours">ተጨማሪ ቀን ከመደመሩ በፊት አስጠንቅቀኝ (ሰዓት)</string>
     <string name="hours_unit_hint">ማሳወቂያዎች በየ15 ደቂቃው ይፈተሻሉ።</string>
+    <string name="gregorian_date">የግሪጎሪያን ቀን</string>
+    <string name="select_date">ቀን ይምረጡ</string>
+    <string name="select_time">ሰዓት ይምረጡ</string>
+    <string name="hour">ሰዓት</string>
+    <string name="minute">ደቂቃ</string>
+    <string name="clock_24_hint">= %1$s በ24 ሰዓት አቆጣጠር</string>
     <string name="dates">ቀኖች</string>
-    <string name="show_ethiopian">የኢትዮጵያ ቀን አሳይ</string>
-    <string name="show_ethiopian_hint">ከመመለሻ ቀን ጎን የኢትዮጵያ ካሌንደር ቀን ይጨምራል።</string>
+    <string name="show_ethiopian">የኢትዮጵያ ካሌንደርና ሰዓት</string>
+    <string name="show_ethiopian_hint">ሁሉም ቀንና ሰዓት በኢትዮጵያ ካሌንደርና ሰዓት ይታያል፤ ይመረጣልም (ጠዋት 12 ሰዓት = 6:00)። ለግሪጎሪያን ካሌንደር ያጥፉት።</string>
     <string name="studio_info">ስቱዲዮ</string>
     <string name="studio_name">የስቱዲዮ ስም</string>
     <string name="studio_phone">የስቱዲዮ ስልክ</string>
