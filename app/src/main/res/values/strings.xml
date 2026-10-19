@@ -158,9 +158,15 @@
     <string name="grace_hours">Free grace period (hours)</string>
     <string name="warn_hours">Warn me before an extra day (hours)</string>
     <string name="hours_unit_hint">Notifications are checked every 15 minutes.</string>
+    <string name="gregorian_date">Gregorian date</string>
+    <string name="select_date">Select date</string>
+    <string name="select_time">Select time</string>
+    <string name="hour">Hour</string>
+    <string name="minute">Minute</string>
+    <string name="clock_24_hint">= %1$s on a normal 24-hour clock</string>
     <string name="dates">Dates</string>
-    <string name="show_ethiopian">Show Ethiopian dates</string>
-    <string name="show_ethiopian_hint">Adds the Ethiopian calendar date next to return dates.</string>
+    <string name="show_ethiopian">Ethiopian calendar and clock</string>
+    <string name="show_ethiopian_hint">All dates and times are shown and picked in the Ethiopian calendar and clock (6:00 normal time is 12:00 ሰዓት). Turn off to use the Gregorian calendar.</string>
     <string name="studio_info">Studio</string>
     <string name="studio_name">Studio name</string>
     <string name="studio_phone">Studio phone</string>
