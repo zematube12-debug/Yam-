@@ -145,7 +145,7 @@ fun NewRentalScreen(vm: AppViewModel, onBack: () -> Unit, onCreated: (Long) -> U
             YamCard {
                 InfoRow(stringResource(R.string.return_by), fmt.dateTime(dueAt), bold = true)
                 if (settings.ethiopianDates) {
-                    InfoRow(stringResource(R.string.ethiopian_date), fmt.eth(dueAt))
+                    InfoRow(stringResource(R.string.gregorian_date), fmt.greg(dueAt))
                 }
             }
 

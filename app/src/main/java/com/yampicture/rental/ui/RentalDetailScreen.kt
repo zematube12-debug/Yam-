@@ -196,7 +196,7 @@ fun RentalDetailScreen(vm: AppViewModel, rentalId: Long, onBack: () -> Unit) {
                 InfoRow(stringResource(R.string.picked_up), fmt.dateTime(r.startAt))
                 InfoRow(stringResource(R.string.return_by), fmt.dateTime(r.dueAt))
                 if (settings.ethiopianDates) {
-                    InfoRow(stringResource(R.string.ethiopian_date), fmt.eth(r.dueAt))
+                    InfoRow(stringResource(R.string.gregorian_date), fmt.greg(r.dueAt))
                 }
                 if (r.returnedAt != null) {
                     InfoRow(stringResource(R.string.returned), fmt.dateTime(r.returnedAt), goodColor(), bold = true)

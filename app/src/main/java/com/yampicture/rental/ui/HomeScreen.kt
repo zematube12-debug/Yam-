@@ -99,7 +99,7 @@ fun HomeScreen(
         )
     }
 
-    val subtitle = if (settings.ethiopianDates) "${fmt.day(now)} · ${fmt.eth(now)}" else fmt.day(now)
+    val subtitle = fmt.day(now)
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {

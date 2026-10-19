@@ -58,6 +58,7 @@ import com.yampicture.rental.R
 import com.yampicture.rental.data.Cat
 import com.yampicture.rental.data.RentalFull
 import com.yampicture.rental.logic.Billing
+import com.yampicture.rental.logic.EthiopianCalendar
 import com.yampicture.rental.logic.RentalStatus
 import com.yampicture.rental.logic.balance
 import com.yampicture.rental.logic.status
@@ -333,6 +334,7 @@ fun Stepper(value: Int, onChange: (Int) -> Unit, min: Int, max: Int, modifier: M
 @Composable
 fun DateTimeField(label: String, value: Long, onChange: (Long) -> Unit, modifier: Modifier = Modifier) {
     val fmt = LocalFmt.current
+    val ethiopian = LocalSettings.current.ethiopianDates
     var showDate by remember { mutableStateOf(false) }
     var showTime by remember { mutableStateOf(false) }
     var pickedDay by remember { mutableLongStateOf(0L) }
@@ -355,53 +357,78 @@ fun DateTimeField(label: String, value: Long, onChange: (Long) -> Unit, modifier
     }
 
     if (showDate) {
-        val state = rememberDatePickerState(initialSelectedDateMillis = DateTools.localToUtcDay(value))
-        DatePickerDialog(
-            onDismissRequest = { showDate = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    val picked = state.selectedDateMillis
+        if (ethiopian) {
+            EthDatePickerDialog(
+                initialMillis = value,
+                onDismiss = { showDate = false },
+                onConfirm = { y, m, d ->
+                    val g = EthiopianCalendar.toGregorian(y, m, d)
+                    pickedDay = DateTools.utcDay(g.first, g.second - 1, g.third)
                     showDate = false
-                    if (picked != null) {
-                        pickedDay = picked
-                        showTime = true
-                    }
-                }) { Text(stringResource(R.string.next)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDate = false }) { Text(stringResource(R.string.cancel)) }
-            },
-        ) {
-            DatePicker(state = state)
+                    showTime = true
+                },
+            )
+        } else {
+            val state = rememberDatePickerState(initialSelectedDateMillis = DateTools.localToUtcDay(value))
+            DatePickerDialog(
+                onDismissRequest = { showDate = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val picked = state.selectedDateMillis
+                        showDate = false
+                        if (picked != null) {
+                            pickedDay = picked
+                            showTime = true
+                        }
+                    }) { Text(stringResource(R.string.next)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDate = false }) { Text(stringResource(R.string.cancel)) }
+                },
+            ) {
+                DatePicker(state = state)
+            }
         }
     }
 
     if (showTime) {
         val c = Calendar.getInstance()
         c.timeInMillis = value
-        val timeState = rememberTimePickerState(
-            initialHour = c.get(Calendar.HOUR_OF_DAY),
-            initialMinute = c.get(Calendar.MINUTE),
-            is24Hour = true,
-        )
-        Dialog(
-            onDismissRequest = { showTime = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false),
-        ) {
-            Surface(
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 6.dp,
-                modifier = Modifier.padding(16.dp),
+        if (ethiopian) {
+            EthTimePickerDialog(
+                initialHour = c.get(Calendar.HOUR_OF_DAY),
+                initialMinute = c.get(Calendar.MINUTE),
+                onDismiss = { showTime = false },
+                onConfirm = { h, m ->
+                    onChange(DateTools.combine(pickedDay, h, m))
+                    showTime = false
+                },
+            )
+        } else {
+            val timeState = rememberTimePickerState(
+                initialHour = c.get(Calendar.HOUR_OF_DAY),
+                initialMinute = c.get(Calendar.MINUTE),
+                is24Hour = true,
+            )
+            Dialog(
+                onDismissRequest = { showTime = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false),
             ) {
-                Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    TimePicker(state = timeState)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                        TextButton(onClick = { showTime = false }) { Text(stringResource(R.string.cancel)) }
-                        TextButton(onClick = {
-                            onChange(DateTools.combine(pickedDay, timeState.hour, timeState.minute))
-                            showTime = false
-                        }) { Text(stringResource(R.string.ok)) }
+                Surface(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 6.dp,
+                    modifier = Modifier.padding(16.dp),
+                ) {
+                    Column(Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        TimePicker(state = timeState)
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                            TextButton(onClick = { showTime = false }) { Text(stringResource(R.string.cancel)) }
+                            TextButton(onClick = {
+                                onChange(DateTools.combine(pickedDay, timeState.hour, timeState.minute))
+                                showTime = false
+                            }) { Text(stringResource(R.string.ok)) }
+                        }
                     }
                 }
             }
@@ -413,6 +440,7 @@ fun DateTimeField(label: String, value: Long, onChange: (Long) -> Unit, modifier
 @Composable
 fun DateField(label: String, value: Long, onChange: (Long) -> Unit, modifier: Modifier = Modifier) {
     val fmt = LocalFmt.current
+    val ethiopian = LocalSettings.current.ethiopianDates
     var show by remember { mutableStateOf(false) }
 
     Surface(
@@ -433,25 +461,38 @@ fun DateField(label: String, value: Long, onChange: (Long) -> Unit, modifier: Mo
     }
 
     if (show) {
-        val state = rememberDatePickerState(initialSelectedDateMillis = DateTools.localToUtcDay(value))
-        DatePickerDialog(
-            onDismissRequest = { show = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    val picked = state.selectedDateMillis
+        fun finish(utcDay: Long) {
+            val now = System.currentTimeMillis()
+            val noon = DateTools.combine(utcDay, 12, 0)
+            onChange(if (DateTools.sameDay(noon, now)) now else noon)
+        }
+        if (ethiopian) {
+            EthDatePickerDialog(
+                initialMillis = value,
+                onDismiss = { show = false },
+                onConfirm = { y, m, d ->
+                    val g = EthiopianCalendar.toGregorian(y, m, d)
                     show = false
-                    if (picked != null) {
-                        val now = System.currentTimeMillis()
-                        val noon = DateTools.combine(picked, 12, 0)
-                        onChange(if (DateTools.sameDay(noon, now)) now else noon)
-                    }
-                }) { Text(stringResource(R.string.ok)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { show = false }) { Text(stringResource(R.string.cancel)) }
-            },
-        ) {
-            DatePicker(state = state)
+                    finish(DateTools.utcDay(g.first, g.second - 1, g.third))
+                },
+            )
+        } else {
+            val state = rememberDatePickerState(initialSelectedDateMillis = DateTools.localToUtcDay(value))
+            DatePickerDialog(
+                onDismissRequest = { show = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val picked = state.selectedDateMillis
+                        show = false
+                        if (picked != null) finish(picked)
+                    }) { Text(stringResource(R.string.ok)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { show = false }) { Text(stringResource(R.string.cancel)) }
+                },
+            ) {
+                DatePicker(state = state)
+            }
         }
     }
 }
