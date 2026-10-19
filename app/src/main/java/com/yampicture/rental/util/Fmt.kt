@@ -17,13 +17,31 @@ class Fmt(val lang: String, val ethiopian: Boolean) {
 
     fun num(n: Long): String = String.format(Locale.US, "%,d", n)
 
-    fun date(ms: Long): String = dateFormat.format(Date(ms))
+    /** With the Ethiopian setting on, every date and time in the app uses the Ethiopian calendar and clock. */
+    fun date(ms: Long): String = if (ethiopian) eth(ms) else dateFormat.format(Date(ms))
 
-    fun time(ms: Long): String = timeFormat.format(Date(ms))
+    fun time(ms: Long): String {
+        if (!ethiopian) return timeFormat.format(Date(ms))
+        val c = Calendar.getInstance()
+        c.timeInMillis = ms
+        return EthiopianCalendar.formatTime(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), lang == "am")
+    }
 
     fun dateTime(ms: Long): String = "${date(ms)}, ${time(ms)}"
 
-    fun day(ms: Long): String = dayFormat.format(Date(ms))
+    /** Weekday and date, e.g. "ሰኞ 9 ጥቅምት 2019". */
+    fun day(ms: Long): String {
+        if (!ethiopian) return dayFormat.format(Date(ms))
+        val c = Calendar.getInstance()
+        c.timeInMillis = ms
+        // Calendar: Sunday = 1 ... Saturday = 7  ->  Monday-first index
+        val index = (c.get(Calendar.DAY_OF_WEEK) + 5) % 7
+        val names = if (lang == "am") EthiopianCalendar.weekdaysAm else EthiopianCalendar.weekdaysEn
+        return "${names[index]} ${eth(ms)}"
+    }
+
+    /** Always the Gregorian date, used as a reference next to Ethiopian ones. */
+    fun greg(ms: Long): String = dateFormat.format(Date(ms))
 
     fun month(year: Int, month0: Int): String {
         val c = Calendar.getInstance()
@@ -50,6 +68,14 @@ object DateTools {
         val u = Calendar.getInstance(utc)
         u.clear()
         u.set(l.get(Calendar.YEAR), l.get(Calendar.MONTH), l.get(Calendar.DAY_OF_MONTH))
+        return u.timeInMillis
+    }
+
+    /** UTC midnight of a Gregorian day ([month0] is 0-11), the format Material date pickers use. */
+    fun utcDay(year: Int, month0: Int, day: Int): Long {
+        val u = Calendar.getInstance(utc)
+        u.clear()
+        u.set(year, month0, day)
         return u.timeInMillis
     }
 
